@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-public class NoteBook {
+public class Notebook {
     @Id
     private UUID id;
     private String name;
@@ -18,17 +18,17 @@ public class NoteBook {
     private List<Note> notes;
 
 
-    public NoteBook() {
+    public Notebook() {
         this.id = UUID.randomUUID();
         this.notes = new ArrayList<>();
     }
 
-    public NoteBook(String name) {
+    public Notebook(String name) {
         this();
         this.name = name;
     }
 
-    public NoteBook(String id, String name) {
+    public Notebook(String id, String name) {
         this();
         if (id != null) {
             this.id = UUID.fromString(id);

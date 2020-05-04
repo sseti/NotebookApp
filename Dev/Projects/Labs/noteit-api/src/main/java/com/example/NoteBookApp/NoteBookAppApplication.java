@@ -2,9 +2,10 @@ package com.example.NoteBookApp;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
 @SpringBootApplication
-public class NoteBookAppApplication {
+public class NoteBookAppApplication extends SpringBootServletInitializer {
 
 	public static void main(String[] args) {
 		SpringApplication.run(NoteBookAppApplication.class, args);

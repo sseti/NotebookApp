@@ -15,7 +15,7 @@ public class Note {
     private String text;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private NoteBook notebook;
+    private Notebook notebook;
 
     private Date lastModifiedOn;
 
@@ -24,14 +24,14 @@ public class Note {
         this.lastModifiedOn = new Date();
     }
 
-    public Note(String title, String text, NoteBook notebook) {
+    public Note(String title, String text, Notebook notebook) {
         this();
         this.title = title;
         this.text = text;
         this.notebook = notebook;
     }
 
-    public Note(String id, String title, String text, NoteBook notebook) {
+    public Note(String id, String title, String text, Notebook notebook) {
         this(title, text, notebook);
         if (id != null) {
             this.id = UUID.fromString(id);
@@ -51,7 +51,7 @@ public class Note {
         return text;
     }
 
-    public NoteBook getNotebook() {
+    public Notebook getNotebook() {
         return notebook;
     }
 
@@ -66,20 +66,6 @@ public class Note {
     public void setLastModifiedOn(Date lastModifiedOn) {
         this.lastModifiedOn = lastModifiedOn;
     }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    public void setNotebook(NoteBook notebook) {
-        this.notebook = notebook;
-    }
 }
+
+

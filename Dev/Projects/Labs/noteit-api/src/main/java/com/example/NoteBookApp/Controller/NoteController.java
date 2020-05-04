@@ -1,27 +1,92 @@
-package com.example.NoteBookApp.Controller;
+package com.example.NoteBookApp.controller;
 
-import com.example.NoteBookApp.Service.NoteService;
+import com.example.NoteBookApp.Mapper;
+import com.example.NoteBookApp.controller.viewmodel.NoteViewModel;
+import com.example.NoteBookApp.db.NoteRepository;
+import com.example.NoteBookApp.db.NotebookRepository;
 import com.example.NoteBookApp.model.Note;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
+import com.example.NoteBookApp.model.Notebook;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+
+import javax.persistence.EntityNotFoundException;
+import javax.validation.ValidationException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
-@RestController
 public class NoteController {
-    NoteService noteService;
+    private NoteRepository noteRepository;
+    private NotebookRepository notebookRepository;
+    private Mapper mapper;
 
-    @Autowired
-    public NoteController(NoteService noteService) {
-        this.noteService = noteService;
+    public NoteController(NoteRepository noteRepository, NotebookRepository notebookRepository, Mapper mapper) {
+        this.noteRepository = noteRepository;
+        this.notebookRepository = notebookRepository;
+        this.mapper = mapper;
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Note> findNoteById(@RequestParam UUID id) {
-        return new ResponseEntity<Note>(noteService.findNoteById(id).get(),HttpStatus.OK);
+    @GetMapping("/all")
+    public List<NoteViewModel> all() {
+        List<Note> notes = this.noteRepository.findAll();
+
+        // map from entity to view model
+        List<NoteViewModel> notesViewModel = notes.stream()
+                .map(note -> this.mapper.convertToNoteViewModel(note))
+                .collect(Collectors.toList());
+
+        return notesViewModel;
+    }
+
+    @GetMapping("/byId/{id}")
+    public NoteViewModel byId(@PathVariable String id) {
+        Note note = this.noteRepository.findById(UUID.fromString(id)).orElse(null);
+
+        if (note == null) {
+            throw new EntityNotFoundException();
+        }
+
+        NoteViewModel noteViewModel = this.mapper.convertToNoteViewModel(note);
+
+        return noteViewModel;
+    }
+
+    @GetMapping("/byNotebook/{notebookId}")
+    public List<NoteViewModel> byNotebook(@PathVariable String notebookId) {
+        List<Note> notes = new ArrayList<>();
+
+        Optional<Notebook> notebook = this.notebookRepository.findById(UUID.fromString(notebookId));
+        if (notebook.isPresent()) {
+            notes = this.noteRepository.findAllByNotebook(notebook.get());
+        }
+
+        // map to note view model
+        List<NoteViewModel> notesViewModel = notes.stream()
+                .map(note -> this.mapper.convertToNoteViewModel(note))
+                .collect(Collectors.toList());
+
+        return notesViewModel;
+    }
+
+    @PostMapping
+    public Note save(@RequestBody NoteViewModel noteCreateViewModel, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            throw new ValidationException();
+        }
+
+        Note noteEntity = this.mapper.convertToNoteEntity(noteCreateViewModel);
+
+        // save note instance to db
+        this.noteRepository.save(noteEntity);
+
+        return noteEntity;
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable String id) {
+        this.noteRepository.deleteById(UUID.fromString(id));
     }
 }
